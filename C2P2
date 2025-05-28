@@ -1,0 +1,146 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define MAX_MEMBERS 5
+#define MAX_RESPONSES 15
+#define MAX_LEN 100
+
+// Struct Definitions
+typedef struct {
+    char nickname[50];
+    int age;
+    char trauma[100];
+} TraumaInfo;
+
+typedef struct {
+    int id;
+    char question[100];
+} CounselingQuestion;
+
+typedef struct {
+    char nickname[50];
+    char question[100];
+    char response[101]; // Limit to 100 characters
+} CounselingResponse;
+
+// Global Arrays
+TraumaInfo members[MAX_MEMBERS] = {
+    {"Alex", 25, ""},
+    {"Jamie", 30, ""},
+    {"Riley", 28, ""},
+    {"Taylor", 27, ""},
+    {"Jordan", 24, ""}
+};
+
+CounselingQuestion questions[5] = {
+    {1, "In what situations have you experienced this trauma?"},
+    {2, "How has this situation affected your daily life and emotions?"},
+    {3, "How have you tried to overcome this trauma?"},
+    {4, "What emotions do you associate with this trauma?"},
+    {5, "What kind of support do you think is necessary to overcome this trauma?"}
+};
+
+CounselingResponse responses[MAX_RESPONSES];
+int responseCount = 0;
+
+// Functions
+int findMember(char name[]) {
+    for (int i = 0; i < MAX_MEMBERS; i++) {
+        if (strcmp(members[i].nickname, name) == 0)
+            return i;
+    }
+    return -1;
+}
+
+void inputTrauma() {
+    char name[50];
+    printf("\nEnter nickname: ");
+    scanf("%s", name);
+
+    int index = findMember(name);
+    if (index != -1) {
+        printf("Enter trauma description: ");
+        scanf(" %[^\n]", members[index].trauma);
+    } else {
+        printf("Nickname not found.\n");
+    }
+}
+
+void startCounseling() {
+    printf("\nMembers with trauma:\n");
+    for (int i = 0; i < MAX_MEMBERS; i++) {
+        if (strlen(members[i].trauma) > 0)
+            printf("%d. %s\n", i + 1, members[i].nickname);
+    }
+
+    int choice;
+    printf("Choose member number: ");
+    scanf("%d", &choice);
+
+    if (choice < 1 || choice > MAX_MEMBERS || strlen(members[choice - 1].trauma) == 0) {
+        printf("Invalid choice.\n");
+        return;
+    }
+
+    char* name = members[choice - 1].nickname;
+
+    srand(time(NULL));
+    for (int i = 0; i < 3; i++) {
+        int q = rand() % 5;
+        printf("\nQ: %s\n", questions[q].question);
+        printf("Answer (max 100 chars): ");
+        getchar(); // clear newline
+        char ans[101];
+        fgets(ans, sizeof(ans), stdin);
+        ans[strcspn(ans, "\n")] = 0;
+
+        while (strlen(ans) == 0 || strlen(ans) > 100) {
+            printf("Invalid. Enter again (max 100 chars): ");
+            fgets(ans, sizeof(ans), stdin);
+            ans[strcspn(ans, "\n")] = 0;
+        }
+
+        strcpy(responses[responseCount].nickname, name);
+        strcpy(responses[responseCount].question, questions[q].question);
+        strcpy(responses[responseCount].response, ans);
+        responseCount++;
+    }
+
+    printf("Counseling completed for %s.\n", name);
+}
+
+void viewResponses() {
+    printf("\nCompleted Counseling Sessions:\n");
+    for (int i = 0; i < responseCount; i++) {
+        printf("Nickname: %s\n", responses[i].nickname);
+        printf("Q: %s\n", responses[i].question);
+        printf("A: %s\n\n", responses[i].response);
+    }
+}
+
+// Main Function
+void overcomeTrauma() {
+    int choice;
+    do {
+        printf("\n=== Trauma Management ===\n");
+        printf("1. Input Trauma Data\n");
+        printf("2. Start Counseling Session\n");
+        printf("3. View Responses\n");
+        printf("4. Exit\n");
+        printf("Choose: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1: inputTrauma(); break;
+            case 2: startCounseling(); break;
+            case 3: viewResponses(); break;
+        }
+    } while (choice != 4);
+}
+
+int main() {
+    overcomeTrauma();
+    return 0;
+}
